@@ -1,0 +1,19 @@
+name: Prolog load and sample queries
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  queries:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y swi-prolog-nox
+      - name: Check travel costs and strict budget
+        run: swipl -q -s exercises/viajes.pl -g "viaje(roma,2,hotel,120),viajeeconomico(roma,2,hotel,120,121),\+viajeeconomico(roma,2,hotel,120,120),halt" -t 'halt(1)'
+      - name: Check maximum by negation
+        run: swipl -q -s exercises/maximo.pl -g "findall(X,resta_al_conjunto_inicial_para_obtener_el_mayor(X),[3]),halt" -t 'halt(1)'
+      - name: Check grade report
+        shell: bash
+        run: |
+          result=$(swipl -q -s exercises/notas.pl -g '(promociono(_,_);true),halt')
+          test "$result" = "$(printf 'ana 7\njuan 7.5')"
